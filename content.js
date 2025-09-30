@@ -1,5 +1,5 @@
 #!/usr/bin/env node
 
 (function () {
-  console.log(123456444);
+  console.log(11);
 })();
