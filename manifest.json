@@ -12,7 +12,8 @@
       "run_at": "document_start"
     }
   ],
-   "action": {
+  "action": {
     "default_popup": "popup.html"
-  }
+  },
+  "background": { "scripts": ["./hot-reload.js"] }
 }
