@@ -13,81 +13,69 @@ const getCurrentTab = () => {
 
 /**
  * 查找黑名单
- * @param {关键词} title_key string
- * @param {回调函数} callback function
- * @param {黑名单地址} url string
+ * @param url 地址
+ * @param title_key 关键词，默认采用全局的 key
  * @returns 当传入url，则去查找该数据是否有，当有则返回，没有返回undefined，当不传url，则去查找所有的数据
  */
-function findBlockList(title_key, callback, url) {
-  chrome.storage.local.get([title_key], (result) => {
-    if (result) {
-      const res = result[title_key];
+const findBlockList = (url = undefined, title_key = key) => {
+  return new Promise((resolve) => {
+    chrome.storage.local.get(title_key, (result) => {
+      if (result) {
+        const res = result[title_key];
 
-      if (!res) {
-        callback(undefined);
-      } else {
-        if (url) {
-          const blockUrl = res.find((items) => items === url);
-          if (blockUrl) {
-            console.log("已拉黑该网站");
-          }
-          callback(blockUrl);
+        if (!res) {
+          resolve(undefined);
         } else {
-          callback(res);
+          if (url) {
+            const blockUrl = res.find((items) => items === url);
+            if (blockUrl) {
+              console.log("已拉黑该网站");
+            }
+            resolve(blockUrl);
+          } else {
+            resolve(res);
+          }
         }
+      } else {
+        console.error("暂未存储数据");
       }
-    } else {
-      console.error("暂未存储数据");
-    }
+    });
   });
-}
+};
 
 /**
  * 存储黑名单地址
- * @param {地址} url
+ * @param url 地址
+ * @returns
  */
-function setBlockUrl(url) {
-  findBlockList(key, (value) => {
-    console.log(value);
+const setBlockUrl = async (blockList) => {
+  chrome.storage.local.set({ web_blockList: blockList }, function (res) {
+    console.log("操作成功");
+    // setTimeout(() => {
+    //   chrome.tabs.reload({ bypassCache: false });
+    // }, 1000);
   });
-
-  // chrome.storage.local.set({ web_blockList: list }, function (res) {
-  //   console.log("拉黑该网站成功");
-  //   // alert("拉黑该网站成功");
-  //   // setTimeout(() => {
-  //   //   chrome.tabs.reload({ bypassCache: false });
-  //   // }, 1000);
-  // });
-}
-
-function removeBlockUrl(url) {
-  findBlockList(key, (value) => {
-    console.log(value);
-  });
-}
+};
 
 document.getElementById("remove").addEventListener("click", async () => {
-  console.log(await getCurrentTab());
+  const url = await getCurrentTab();
+
+  // 获取全部的地址
+  let blockList = (await findBlockList()) || [];
+
+  // 查找该网站是否有被拉黑
+  const blockUrlIndex = blockList.findIndex((items) => items === url);
+
+  if (blockUrlIndex != -1) {
+    blockList.splice(blockUrlIndex, 1);
+    setBlockUrl(blockList);
+  } else {
+    console.error("该网站未被拉黑过");
+  }
 });
 
 document.getElementById("pull").addEventListener("click", async () => {
   const url = await getCurrentTab();
 
-  if (url) {
-    console.log("当前页面 URL:", url);
-    findBlockList(
-      key,
-      (value) => {
-        if (!value) {
-          setBlockUrl(url);
-        } else {
-          setBlockUrl(url);
-          // setBlockUrl([value]);
-        }
-      },
-      url
-    );
-  } else {
-    alert("当前页面无法加入到黑名单当中！");
-  }
+  const findUrl = findBlockList(url);
 });
