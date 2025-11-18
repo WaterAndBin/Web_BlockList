@@ -1,12 +1,11 @@
 <script lang="ts" setup>
+import { ElMessage } from "element-plus";
+import { updateRules } from "../tools/net-rules.js";
 import { findBlockList, getActionTabs, setBlockUrl } from "../tools/utils.js";
-
-const isBlock = ref<boolean>(false);
 
 const actionUrl = ref<string>("");
 
-const pullRef = ref<HTMLElement>();
-const removeRef = ref<HTMLElement>();
+const redirectUrl = ref<string>("");
 
 const pullBlockList = async () => {
   if (await findBlockList(actionUrl.value)) return;
@@ -15,6 +14,8 @@ const pullBlockList = async () => {
   blocklist.push(actionUrl.value);
 
   await setBlockUrl(blocklist, actionUrl.value);
+  updateRules();
+  ElMessage.success("拉黑成功");
 };
 
 const removeBlockList = async () => {
@@ -29,38 +30,35 @@ const removeBlockList = async () => {
   if (blockUrlIndex != -1) {
     blockList.splice(blockUrlIndex, 1);
     setBlockUrl(blockList, actionUrl.value);
+    updateRules();
+    ElMessage.success("移除成功");
   } else {
-    console.error("该网站未被拉黑过");
-  }
-};
-
-const checkUrlBlock = async () => {
-  const findResult = await findBlockList(actionUrl.value);
-
-  if (findResult) {
-    isBlock.value = true;
+    ElMessage.warning("该网站未被拉黑");
   }
 };
 
 onMounted(async () => {
   actionUrl.value = (await getActionTabs()) as string;
-  checkUrlBlock();
 });
 </script>
 
 <template>
   <div>
-    <div class="container">
-      <button id="pull" ref="pullRef" @click="pullBlockList">拉入黑名单</button>
-      <button id="remove" ref="removeRef" @click="removeBlockList">
-        解除黑名单
-      </button>
+    <div class="size-50 flex items-center justify-center flex-col">
+      <el-space direction="vertical">
+        <el-button type="primary" plain @click="pullBlockList"
+          >拉入黑名单</el-button
+        >
+        <el-button type="info" plain @click="removeBlockList"
+          >解除黑名单</el-button
+        >
+        <div class="border-[1px] border-solid border-slate-400 rounded p-2">
+          <el-space direction="vertical">
+            <el-input v-model="redirectUrl"></el-input>
+            <el-button size="small">重定向</el-button>
+          </el-space>
+        </div>
+      </el-space>
     </div>
   </div>
 </template>
-
-<style scoped>
-.container {
-  width: 100px;
-}
-</style>

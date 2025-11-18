@@ -1,3 +1,5 @@
+import { ElMessage } from "element-plus";
+
 const key = "local:web_blockList";
 
 export const getActionTabs = (): Promise<string | undefined> => {
@@ -20,15 +22,17 @@ export const findBlockList = async (
 ): Promise<string[] | boolean> => {
   const result: string[] | null = await storage.getItem(title_key);
 
-  if (result) {
+  if (result && result?.length !== 0) {
     if (url) {
       const blockUrl = result.find((items) => items === url);
       if (blockUrl) {
-        console.log("已拉黑该网站");
+        ElMessage.warning("已拉黑该网站");
         return true;
       }
       return false;
     }
+  } else if (url) {
+    return false;
   }
 
   return result ?? [];

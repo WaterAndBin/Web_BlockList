@@ -1,3 +1,5 @@
+import { updateRules } from "./tools/net-rules";
+
 export default defineBackground(() => {
-  console.log('Hello background!', { id: browser.runtime.id });
+  console.log("刷新了？");
 });

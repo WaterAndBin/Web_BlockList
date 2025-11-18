@@ -1,13 +1,24 @@
 import { defineConfig } from "wxt";
+import AutoImport from "unplugin-auto-import/vite";
+import Components from "unplugin-vue-components/vite";
+import { ElementPlusResolver } from "unplugin-vue-components/resolvers";
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
   modules: ["@wxt-dev/module-vue", "@wxt-dev/unocss"],
+
   manifest: {
-    permissions: ["storage"],
+    permissions: ["storage", "declarativeNetRequest"],
   },
-  unocss: {
-    // Exclude unocss from running for the background
-    excludeEntrypoints: ["background"],
-  },
+
+  vite: () => ({
+    plugins: [
+      AutoImport({
+        resolvers: [ElementPlusResolver()],
+      }),
+      Components({
+        resolvers: [ElementPlusResolver()],
+      }),
+    ],
+  }),
 });
