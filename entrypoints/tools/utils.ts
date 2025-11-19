@@ -1,48 +1,48 @@
 import { ElMessage } from "element-plus";
+import { Block } from "../typing/block";
 
 const key = "local:web_blockList";
 
-export const getActionTabs = (): Promise<string | undefined> => {
+export const getActionTabs = (): Promise<string> => {
   return new Promise((resolve) => {
     browser.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      resolve(tabs?.[0]?.url);
+      resolve(tabs?.[0]?.url ?? "");
     });
   });
 };
 
-/**
- * 查找黑名单
- * @param url 地址
- * @param title_key 关键词，默认采用全局的 key
- * @returns 当传入url，则去查找该数据是否有，当有则返回，没有返回undefined，当不传url，则去查找所有的数据
- */
-export const findBlockList = async (
-  url: string | undefined = undefined,
-  title_key: StorageItemKey = key
-): Promise<string[] | boolean> => {
-  const result: string[] | null = await storage.getItem(title_key);
-
-  if (result && result?.length !== 0) {
-    if (url) {
-      const blockUrl = result.find((items) => items === url);
-      if (blockUrl) {
-        ElMessage.warning("已拉黑该网站");
-        return true;
-      }
-      return false;
-    }
-  } else if (url) {
-    return false;
-  }
+export const getBlockList = async (): Promise<Block[]> => {
+  const result = await storage.getItem<Block[]>(key);
 
   return result ?? [];
 };
 
-export const setBlockUrl = async (blockList: string[], url?: string) => {
-  await storage.setItem<string[]>(key, blockList);
+export const findBlockUrl = async (url: string): Promise<boolean> => {
+  const blockList = await getBlockList();
+
+  return blockList?.find((items) => items.domain === url) ? true : false;
+};
+
+export const findRedirectUrl = async (url: string): Promise<string> => {
+  const blockList = await getBlockList();
+
+  return blockList?.find((items) => items.domain === url)?.redirectUrl ?? "";
+};
+
+export const findBlockUrlIndex = async (url: string): Promise<number> => {
+  const blockList = await getBlockList();
+
+  return blockList?.findIndex((items) => items.domain === url);
+};
+
+export const setBlockUrl = async (
+  blockList: Block[],
+  url?: string
+): Promise<boolean | void> => {
+  await storage.setItem<Block[]>(key, blockList);
 
   if (url) {
-    const result = await findBlockList(url);
+    const result = await findBlockUrl(url);
 
     if (result) {
       return true;
