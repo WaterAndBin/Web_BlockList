@@ -1,12 +1,25 @@
 import { ElMessage } from "element-plus";
 import { Block } from "../typing/block";
+import useMessage from "./message";
 
 const key = "local:web_blockList";
 
 export const getActionTabs = (): Promise<string> => {
   return new Promise((resolve) => {
     browser.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      resolve(tabs?.[0]?.url ?? "");
+      const url = tabs?.[0]?.url ?? "";
+
+      if (url !== "") {
+        const newUrl = new URL(url);
+
+        console.log("====");
+        console.log(url);
+        console.log(newUrl);
+
+        resolve(newUrl?.origin);
+      } else {
+        useMessage("网站有误！", "warning");
+      }
     });
   });
 };
