@@ -1,8 +1,4 @@
-import { updateRules } from "./tools/net-rules";
 import { findRedirectUrl, getActionTabs } from "./tools/utils";
-
-// 已经处理过的 tabId
-const handledTabs = new Set<number>();
 
 export default defineBackground(() => {
   browser.tabs.onUpdated.addListener(async (tabId, changeInfo) => {
@@ -13,6 +9,7 @@ export default defineBackground(() => {
     if (changeInfo.status !== "complete") return;
 
     if (redirectUrl && redirectUrl !== "") {
+      browser.runtime.sendMessage({ isMessage: true });
       browser.tabs.update({ url: redirectUrl });
     }
   });

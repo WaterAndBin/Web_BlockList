@@ -5,8 +5,9 @@ import { getBlockList } from "./utils";
  */
 export const updateRules = async () => {
   const urlPatterns = await getBlockList();
-  const rules: globalThis.Browser.declarativeNetRequest.Rule[] =
-    urlPatterns.map((pattern, index) => ({
+  const rules: globalThis.Browser.declarativeNetRequest.Rule[] = urlPatterns
+    .filter((items) => items.isBlock)
+    .map((pattern, index) => ({
       id: index + 1,
       priority: 1,
       action: { type: "block" },

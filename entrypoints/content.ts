@@ -1,3 +1,4 @@
+import useMessage from "./tools/message";
 import { updateRules } from "./tools/net-rules";
 
 export default defineContentScript({
@@ -5,6 +6,9 @@ export default defineContentScript({
   async main(ctx) {
     // 你的“权限判断”逻辑 — 这里演示固定无权限
     const hasPermission = false;
+
+    console.log("======");
+    console.log(ctx);
 
     // if (!hasPermission) {
     //   // 清空 HTML
